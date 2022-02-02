@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TrackerLibrary;
+using TrackerLibrary.DataAccess;
+using TrackerLibrary.Models;
 
 namespace TrackerUi
 {
@@ -28,10 +30,7 @@ namespace TrackerUi
                     prizeAmountValue.Text,
                     prizePercentageValue.Text);
 
-                foreach (var db in GlobalConfig.Connections)
-                {
-                    db.CreatePrize(model);
-                }
+                GlobalConfig.Connection.CreatePrize(model);
 
                 placeNameValue.Text = "";
                 placeNumberValue.Text = "";
@@ -49,7 +48,7 @@ namespace TrackerUi
             bool output = true;
             int placeNumber;
 
-            if (!int.TryParse(placeNameValue.Text, out placeNumber))
+            if (!int.TryParse(placeNumberValue.Text, out placeNumber))
                 output = false;
 
             if (placeNumber < 1)
