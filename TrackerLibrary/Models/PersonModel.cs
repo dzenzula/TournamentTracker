@@ -35,5 +35,10 @@ namespace TrackerLibrary.Models
         /// The primary cell phone of the person.
         /// </summary>
         public string CellphoneNumber { get; set; }
+
+        /// <summary>
+        /// Retrieves first name + last name concatenated.
+        /// </summary>
+        public string FullName => $"{FirstName} {LastName}";
     }
 }
