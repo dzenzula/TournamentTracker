@@ -15,10 +15,12 @@ namespace TrackerUi
 {
     public partial class CreatePrizeForm : Form
     {
-        private readonly List<string> errorMsg = new List<string>();
-        public CreatePrizeForm()
+        private readonly List<string> _errorMsg = new List<string>();
+        private readonly IPrizeRequester _callingForm;
+        public CreatePrizeForm(IPrizeRequester caller)
         {
             InitializeComponent();
+            _callingForm = caller;
         }
 
         private void createPrizeButton_Click(object sender, EventArgs e)
@@ -33,61 +35,63 @@ namespace TrackerUi
 
                 GlobalConfig.Connection.CreatePrize(model);
 
-                placeNameValue.Text = "";
-                placeNumberValue.Text = "";
-                prizeAmountValue.Text = "0";
-                prizePercentageValue.Text = "0";
+                _callingForm.PrizeComplete(model);
+
+                this.Close();
+
+                //placeNameValue.Text = "";
+                //placeNumberValue.Text = "";
+                //prizeAmountValue.Text = "0";
+                //prizePercentageValue.Text = "0";
             }
             else
             {
-                string message = string.Join(Environment.NewLine + Environment.NewLine + "   ", errorMsg);
+                string message = string.Join(Environment.NewLine + Environment.NewLine + "   ", _errorMsg);
                 MessageBox.Show("   " + message, "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                errorMsg.Clear();
+                _errorMsg.Clear();
             }
         }
 
         private bool ValidateForm()
         {
             bool output = true;
-            int placeNumber;
 
-            if (!int.TryParse(placeNumberValue.Text, out placeNumber))
+            if (!int.TryParse(placeNumberValue.Text, out var placeNumber))
             {
                 output = false;
-                errorMsg.Add("Place number is invalid!");
+                _errorMsg.Add("Place number is invalid!");
             }
 
             if (placeNumber < 1)
             {
                 output = false;
-                errorMsg.Add("Place number must be greater than 0!");
+                _errorMsg.Add("Place number must be greater than 0!");
             }
 
             if (placeNameValue.Text.Length == 0)
             {
                 output = false;
-                errorMsg.Add("Place name is empty!");
+                _errorMsg.Add("Place name is empty!");
             }
 
-            decimal prizeAmount = 0;
             double prizePercentage = 0;
 
-            if(!decimal.TryParse(prizeAmountValue.Text, out prizeAmount) || !double.TryParse(prizePercentageValue.Text, out prizePercentage))
+            if(!decimal.TryParse(prizeAmountValue.Text, out var prizeAmount) || !double.TryParse(prizePercentageValue.Text, out prizePercentage))
             {
                 output = false;
-                errorMsg.Add("Amount and percentage must be a number!");
+                _errorMsg.Add("Amount and percentage must be a number!");
             }
 
             if (prizeAmount <= 0 && prizePercentage <= 0)
             {
                 output = false;
-                errorMsg.Add("Amount and percentage can`t be 0 or less!");
+                _errorMsg.Add("Amount and percentage can`t be 0 or less!");
             }
 
             if(prizePercentage < 0 || prizePercentage > 100)
             {
                 output = false;
-                errorMsg.Add("Percentage can`t be less than 0 and greater than 100!");
+                _errorMsg.Add("Percentage can`t be less than 0 and greater than 100!");
             }
 
             return output;

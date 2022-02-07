@@ -14,12 +14,19 @@ namespace TrackerUi
         private List<PersonModel> _availableTeamMembers = GlobalConfig.Connection.GetPerson_All();
         private readonly List<PersonModel> _selectedTeamMembers = new List<PersonModel>();
         private readonly List<string> _errorMsg = new List<string>();
-        public CreateTeamForm()
+        private readonly ITeamRequester _callingForm;
+        public CreateTeamForm(ITeamRequester caller)
         {
             InitializeComponent();
+
+            _callingForm = caller;
+
             WireUpLists();
         }
 
+        /// <summary>
+        /// Refresh lists.
+        /// </summary>
         private void WireUpLists()
         {
             selectTeamMemberDropDown.DataSource = null;
@@ -126,6 +133,8 @@ namespace TrackerUi
                 t.TeamMembers = _selectedTeamMembers;
 
                 GlobalConfig.Connection.CreateTeam(t);
+
+                _callingForm.TeamComplete(t);
 
                 this.Close();
             }

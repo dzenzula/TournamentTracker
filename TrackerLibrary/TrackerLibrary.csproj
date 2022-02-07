@@ -45,7 +45,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataAccess\ITeamRequester.cs" />
     <Compile Include="DataAccess\TextConnectorProcessor.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="GlobalConfig.cs" />
@@ -59,6 +58,7 @@
     <Compile Include="Models\TeamModel.cs" />
     <Compile Include="DataAccess\TextConnector.cs" />
     <Compile Include="Models\TournamentModel.cs" />
+    <Compile Include="TournamentLogic.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
