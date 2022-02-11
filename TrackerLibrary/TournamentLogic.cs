@@ -36,7 +36,7 @@ namespace TrackerLibrary
 
                     if (currMatchup.Entries.Count > 1)
                     {
-                        currMatchup.MatchupRounds = round;
+                        currMatchup.MatchupRound = round;
                         currRound.Add(currMatchup);
                         currMatchup = new MatchupModel();
                     }
@@ -45,7 +45,7 @@ namespace TrackerLibrary
                 model.Rounds.Add(currRound);
                 previousRound = currRound;
                 currRound = new List<MatchupModel>();
-                round++;
+                round += 1;
             }
         }
 
@@ -60,13 +60,13 @@ namespace TrackerLibrary
 
                 if (byes > 0 || curr.Entries.Count > 1)
                 {
-                    curr.MatchupRounds = 1;
+                    curr.MatchupRound = 1;
                     output.Add(curr);
                     curr = new MatchupModel();
 
                     if (byes > 0)
                     {
-                        byes --;
+                        byes -= 1;
                     }
                 }
             }
@@ -95,7 +95,7 @@ namespace TrackerLibrary
 
             while (val < teamCount)
             {
-                output ++;
+                output += 1;
                 val *= 2;
             }
             return output;

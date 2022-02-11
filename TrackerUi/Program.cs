@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using TrackerLibrary;
 
@@ -19,10 +16,9 @@ namespace TrackerUi
             Application.SetCompatibleTextRenderingDefault(false);
 
             //Initialize the database connection.
-            TrackerLibrary.GlobalConfig.InitializeConnections(DatabaseType.TextFile);
-            Application.Run(new CreateTournamentForm());
+            TrackerLibrary.GlobalConfig.InitializeConnections(DatabaseType.Sql);
 
-            //Application.Run(new TournamentDashBoardForm());
+            Application.Run(new TournamentDashBoardForm());
         }
     }
 }
