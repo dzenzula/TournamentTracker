@@ -114,7 +114,7 @@ namespace TrackerLibrary.DataAccess
 
                     foreach (MatchupEntryModel entry in matchup.Entries)
                     {
-                        SaveEntryMantchup(connection, entry, matchup, model);
+                        SaveEntryMantchup(connection, entry, matchup);
                     }
                 }
             }
@@ -127,7 +127,7 @@ namespace TrackerLibrary.DataAccess
         /// <param name="entry">Entry matchup info.</param>
         /// <param name="matchup">Matchup info.</param>
         /// <param name="model">Tournament info.</param>
-        private void SaveEntryMantchup(IDbConnection connection, MatchupEntryModel entry, MatchupModel matchup, TournamentModel model)
+        private void SaveEntryMantchup(IDbConnection connection, MatchupEntryModel entry, MatchupModel matchup)
         {
             var p = new DynamicParameters();
 
@@ -221,6 +221,22 @@ namespace TrackerLibrary.DataAccess
                 p.Add("@id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 connection.Execute("dbo.spTournamentEntries_Insert", p, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        /// <summary>
+        /// Complete tournament, marks active like 0.
+        /// </summary>
+        /// <param name="model">Tournament info.</param>
+        public void CompleteTournament(TournamentModel model)
+        {
+            using (IDbConnection connection =
+                   new System.Data.SqlClient.SqlConnection(GlobalConfig.CnnString("Tournaments")))
+            {
+                var p = new DynamicParameters();
+                p.Add("@id", model.Id);
+
+                connection.Execute("dbo.spTournaments_Complete", p, commandType: CommandType.StoredProcedure);
             }
         }
 

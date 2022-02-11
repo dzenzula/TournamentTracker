@@ -15,7 +15,7 @@ namespace TrackerUi
     public partial class TournamentViewerForm : Form
     {
         private readonly TournamentModel _tournament;
-        private BindingList<int> _rounds = new BindingList<int>();
+        private readonly BindingList<int> _rounds = new BindingList<int>();
         private readonly BindingList<MatchupModel> _selectedMatchups = new BindingList<MatchupModel>();
 
         public TournamentViewerForm(TournamentModel tournamentModel)
@@ -24,11 +24,18 @@ namespace TrackerUi
 
             _tournament = tournamentModel;
 
+            _tournament.OnTournamentComplete += _tournament_OnTournamentComplete;
+
             WireUpLists();
 
             LoadFormData();
 
             LoadRounds();
+        }
+
+        private void _tournament_OnTournamentComplete(object sender, DateTime e)
+        {
+            this.Close();
         }
 
         private void LoadFormData()
@@ -157,11 +164,30 @@ namespace TrackerUi
             LoadMatchups((int)roundDropDown.SelectedItem);
         }
 
+        private string ValidateData()
+        {
+            string output = "";
+            bool scoreOneValid = double.TryParse(teamOneScoreValue.Text, out double teamOneScore);
+            bool scoreTwoValid = double.TryParse(teamTwoScoreValue.Text, out double teamTwoScore);
+
+            if (!scoreOneValid || !scoreTwoValid)
+                output = "The score value is not a valid number.";
+            else if (teamOneScore == teamTwoScore)
+                output = "We do not allow ties in this application.";
+
+            return output;
+        }
+
         private void scoreButton_Click(object sender, EventArgs e)
         {
+            string errorMsg = ValidateData();
+            if (errorMsg.Length > 0)
+            {
+                MessageBox.Show($"Input error: {errorMsg}");
+                return;
+            }
+
             MatchupModel m = (MatchupModel) matchupListBox.SelectedItem;
-            double teamOneScore = 0;
-            double teamTwoScore = 0;
 
             for (int i = 0; i < m.Entries.Count; i++)
             {
@@ -170,16 +196,7 @@ namespace TrackerUi
                     if (m.Entries[0].TeamCompeting != null)
                     {
                         teamOneName.Text = m.Entries[0].TeamCompeting.TeamName;
-                        bool scoreValid = double.TryParse(teamOneScoreValue.Text, out teamOneScore);
-                        if (scoreValid)
-                        {
-                            m.Entries[0].Score = teamOneScore; 
-                        }
-                        else
-                        {
-                            MessageBox.Show("Please enter valid score for team 1.");
-                            return;
-                        }
+                        m.Entries[0].Score = double.Parse(teamOneScoreValue.Text);
                     }
                 }
 
@@ -189,21 +206,29 @@ namespace TrackerUi
                     if (m.Entries[1].TeamCompeting != null)
                     {
                         teamTwoName.Text = m.Entries[1].TeamCompeting.TeamName;
-                        bool scoreValid = double.TryParse(teamTwoScoreValue.Text, out teamTwoScore);
-                        if (scoreValid)
-                        {
-                            m.Entries[1].Score = teamTwoScore;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Please enter valid score for team 2.");
-                            return;
-                        }
+                        m.Entries[1].Score = double.Parse(teamTwoScoreValue.Text);
                     }
                 }
             }
 
-            TournamentLogic.UpdateTournamentResults(_tournament);
+            try
+            {
+                int currentRound = TournamentLogic.CheckCurrentRound(_tournament);
+                int lastRound = _rounds.Last();
+
+                TournamentLogic.UpdateTournamentResults(_tournament);
+
+                if (currentRound == lastRound)
+                {
+                    TournamentResultForm frm = new TournamentResultForm();
+                    frm.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"The application had the following error: {ex.Message}");
+                return;
+            }
 
             LoadMatchups((int)roundDropDown.SelectedItem);
         }

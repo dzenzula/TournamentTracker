@@ -8,6 +8,11 @@ namespace TrackerLibrary
 {
     public static class TournamentLogic
     {
+        public static string winnerTeam;
+        public static string runnerUpTeam;
+        public static string tournamentName;
+        public static string prizeWinner;
+        public static string prizeRunnerUp;
         /// <summary>
         /// Create rounds logic.
         /// </summary>
@@ -29,6 +34,7 @@ namespace TrackerLibrary
         /// <param name="model"></param>
         public static void UpdateTournamentResults(TournamentModel model)
         {
+            int startingRound = model.CheckCurrentRound();
             List<MatchupModel> toScore = new List<MatchupModel>();
 
             foreach (List<MatchupModel> round in model.Rounds)
@@ -45,6 +51,8 @@ namespace TrackerLibrary
             AdvanceWinners(toScore, model);
 
             toScore.ForEach(x => GlobalConfig.Connection.UpdateMatchup(x));
+
+            int enddingRound = model.CheckCurrentRound();
         }
 
         /// <summary>
@@ -219,6 +227,90 @@ namespace TrackerLibrary
                 output += 1;
                 val *= 2;
             }
+            return output;
+        }
+
+        /// <summary>
+        /// Checks current round.
+        /// </summary>
+        /// <param name="model">Tournament info.</param>
+        /// <returns>Current round.</returns>
+        public static int CheckCurrentRound(this TournamentModel model)
+        {
+            int output = 1;
+
+            foreach (List<MatchupModel> round in model.Rounds)
+            {
+                if (round.All(x => x.Winner != null))
+                {
+                    output += 1;
+                }
+                else
+                {
+                    return output;
+                }
+            }
+
+            //Tournament is complete.
+            CompleteTournament(model);
+            return output - 1;
+        }
+
+        /// <summary>
+        /// Complete tournament.
+        /// </summary>
+        /// <param name="model">Tournament info.</param>
+        private static void CompleteTournament(TournamentModel model)
+        {
+            GlobalConfig.Connection.CompleteTournament(model);
+            TeamModel winners = model.Rounds.Last().First().Winner;
+            TeamModel runnerUp = model.Rounds.Last().First().Entries.First(x => x.TeamCompeting != winners).TeamCompeting;
+
+            decimal winnerPrize = 0;
+            decimal runnerUpPrize = 0;
+
+            if (model.Prizes.Count > 0)
+            {
+                decimal totalIncome = model.EnteredTeams.Count * model.EntryFee;
+
+                PrizeModel firstPlacePrize = model.Prizes.FirstOrDefault(x => x.PlaceNumber == 1);
+                PrizeModel secondPlacePrize = model.Prizes.FirstOrDefault(x => x.PlaceNumber == 2);
+
+                if (firstPlacePrize != null)
+                {
+                    winnerPrize = firstPlacePrize.CalculatePrizePayout(totalIncome);
+                    prizeWinner = winnerPrize.ToString();
+                }
+
+                if (secondPlacePrize != null)
+                {
+                    runnerUpPrize = secondPlacePrize.CalculatePrizePayout(totalIncome);
+                    prizeRunnerUp = runnerUpPrize.ToString();
+                }
+            }
+
+            winnerTeam = winners.TeamName;
+            runnerUpTeam = runnerUp.TeamName;
+            tournamentName = model.TournamentName;
+
+            model.CompleteTournament();
+        }
+
+        /// <summary>
+        /// Calculate prize.
+        /// </summary>
+        /// <param name="prize">Prize info.</param>
+        /// <param name="totalIncome">Total income.</param>
+        /// <returns>Prize payout.</returns>
+        private static decimal CalculatePrizePayout(this PrizeModel prize, decimal totalIncome)
+        {
+            decimal output = 0;
+
+            if (prize.PrizeAmount > 0)
+                output = prize.PrizeAmount;
+            else
+                output = Decimal.Multiply(totalIncome, Convert.ToDecimal(prize.PrizePercentage / 100));
+
             return output;
         }
 

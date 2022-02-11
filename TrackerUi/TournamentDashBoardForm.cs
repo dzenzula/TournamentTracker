@@ -18,11 +18,13 @@ namespace TrackerUi
         public TournamentDashBoardForm()
         {
             InitializeComponent();
-            WireUpLists();
+
+            WireUpDashBoardLists();
         }
 
-        private void WireUpLists()
+        private void WireUpDashBoardLists()
         {
+            loadExistingTournamentDropDown.DataSource = null;
             loadExistingTournamentDropDown.DataSource = _tournaments;
             loadExistingTournamentDropDown.DisplayMember = "TournamentName";
         }
@@ -30,14 +32,23 @@ namespace TrackerUi
         private void createTournamentButton_Click(object sender, EventArgs e)
         {
             CreateTournamentForm frm = new CreateTournamentForm();
-            frm.Show();
+            frm.ShowDialog();
+            WireUpDashBoardLists();
         }
 
         private void loadTournamentButton_Click(object sender, EventArgs e)
         {
-            TournamentModel tm = (TournamentModel)loadExistingTournamentDropDown.SelectedItem;
-            TournamentViewerForm frm = new TournamentViewerForm(tm);
-            frm.Show();
+            if (loadExistingTournamentDropDown.SelectedItem != null)
+            {
+                TournamentModel tm = (TournamentModel)loadExistingTournamentDropDown.SelectedItem;
+                TournamentViewerForm frm = new TournamentViewerForm(tm);
+                frm.ShowDialog();
+                WireUpDashBoardLists();
+            }
+            else
+            {
+                MessageBox.Show("List is empty. Please create new tournament.");
+            }
         }
     }
 }
