@@ -121,8 +121,6 @@ namespace TrackerUi
 
             TournamentLogic.UpdateTournamentResults(tm);
 
-            TournamentViewerForm frm = new TournamentViewerForm(tm);
-            frm.Show();
             this.Close();
         }
     }
